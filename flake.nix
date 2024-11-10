@@ -15,7 +15,7 @@
       system:
       let
         pname = "kelly-hs";
-        synopsis = "Kelly criterion";
+        synopsis = "Kelly criterion in Haskell with informative linear types";
         description = synopsis;
 
         # https://pvp.haskell.org

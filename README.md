@@ -1,1 +1,1 @@
-Kelly criterion with informative types
+Kelly criterion in Haskell with informative linear types
