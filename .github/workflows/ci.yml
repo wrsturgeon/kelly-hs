@@ -16,9 +16,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Check formatting
-      uses: haskell-actions/run-ormolu@v16
-
     - name: Install Nix
       uses: cachix/install-nix-action@v27
 
@@ -27,6 +24,9 @@ jobs:
       with:
         use_nix_profile: true
         nix_channel: nixpkgs
+
+    - name: Check formatting
+      run: find . -name '*.hs' ! -path '*dist-newstyle*' | xargs ormolu --color always --check-idempotence --mode check
 
     - name: Cabal (build)
       run: cabal build
