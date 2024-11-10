@@ -61,9 +61,17 @@
           "GeneralizedNewtypeDeriving"
         ];
         common-deps = [ "linear-base" ];
-        src-deps = [ "base" ];
+        src-deps = [
+          "base"
+          "QuickCheck"
+        ];
         app-deps = [ "base" ];
-        test-deps = [ ];
+        test-deps = [
+          "QuickCheck"
+          "tasty"
+          "tasty-hunit"
+          "tasty-quickcheck"
+        ];
         cabal-contents = for-nix-only: ''
           cabal-version: ${cabal-version}
 

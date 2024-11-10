@@ -1,14 +1,17 @@
 module Marginal (Marginal, absolute, marginal, unwrap) where
 
 import Control.Functor.Linear (Applicative (pure, (<*>)), Functor (fmap), Monad ((>>=)), (<$>))
+import Data.Eq qualified as ClassicalEq
+import Data.Functor qualified as ClassicalFunctor
 import Data.Functor.Linear qualified as Data
 import Data.Kind (Type)
 import Data.List.Linear ((++))
 import Data.Num.Linear (AddIdentity (zero), Additive ((+)), AdditiveGroup ((-)), FromInteger (fromInteger), MultIdentity (one), Multiplicative ((*)), Num (abs, signum), Ring, Semiring)
 import Data.Ord.Linear (Eq ((==)), Ord (compare, (<)))
-import GHC.Num qualified as GHC
+import GHC.Num qualified as ClassicalNum
 import Prelude.Linear (Floating (acos, acosh, asin, asinh, atan, atanh, cos, cosh, exp, log, pi, sin, sinh), Fractional (fromRational, (/)), Show (show))
 import Scalar (Scalar)
+import Test.QuickCheck.Arbitrary (Arbitrary (arbitrary, shrink))
 
 type Marginal :: Type -> Type
 newtype Marginal :: Type -> Type where
@@ -31,6 +34,9 @@ instance Data.Functor Marginal where
 
 instance Functor Marginal where
   fmap f (Marginal s) = Marginal (f <$> s)
+
+instance ClassicalFunctor.Functor Marginal where
+  fmap f (Marginal s) = Marginal (f ClassicalFunctor.<$> s)
 
 instance Data.Applicative Marginal where
   pure a = Marginal (pure a)
@@ -69,7 +75,7 @@ instance (Num a) => Num (Marginal a) where
   abs = fmap abs
   signum = fmap signum
 
-instance (Num a) => GHC.Num (Marginal a) where
+instance (Num a) => ClassicalNum.Num (Marginal a) where
   Marginal a + Marginal b = Marginal (a + b)
   Marginal a - Marginal b = Marginal (a - b)
   Marginal a * Marginal b = Marginal (a * b)
@@ -99,8 +105,15 @@ instance (Floating a, Num a) => Floating (Marginal a) where
 instance (Eq a) => Eq (Marginal a) where
   Marginal a == Marginal b = a == b
 
+instance (Eq a) => ClassicalEq.Eq (Marginal a) where
+  Marginal a == Marginal b = a == b
+
 instance (Ord a) => Ord (Marginal a) where
   compare (Marginal a) (Marginal b) = compare a b
 
 instance (Num a, Show a, Ord a) => Show (Marginal a) where
   show (Marginal s) = (if s < zero then "-" else "+") ++ show (abs s)
+
+instance (Arbitrary a) => Arbitrary (Marginal a) where
+  arbitrary = Marginal ClassicalFunctor.<$> arbitrary
+  shrink (Marginal a) = Marginal ClassicalFunctor.<$> shrink a

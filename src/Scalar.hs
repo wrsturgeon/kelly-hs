@@ -1,13 +1,16 @@
 module Scalar (Scalar, scale) where
 
 import Control.Functor.Linear (Applicative (pure, (<*>)), Functor (fmap), Monad ((>>=)))
+import Data.Eq qualified as ClassicalEq
+import Data.Functor qualified as ClassicalFunctor
 import Data.Functor.Linear qualified as Data
 import Data.Kind (Type)
 import Data.List.Linear ((++))
 import Data.Num.Linear (AddIdentity (zero), Additive ((+)), AdditiveGroup ((-)), FromInteger (fromInteger), MultIdentity (one), Multiplicative ((*)), Num (abs, signum), Ring, Semiring)
 import Data.Ord.Linear (Eq ((==)), Ord (compare))
-import GHC.Num qualified as GHC
+import GHC.Num qualified as ClassicalNum
 import Prelude.Linear (Floating (acos, acosh, asin, asinh, atan, atanh, cos, cosh, exp, log, pi, sin, sinh), Fractional (fromRational, (/)), Show (show))
+import Test.QuickCheck.Arbitrary (Arbitrary (arbitrary, shrink))
 
 -- why not have `Fractional` in the type signature?
 -- read here: <https://stackoverflow.com/questions/72304990>
@@ -15,11 +18,17 @@ type Scalar :: Type -> Type
 newtype Scalar :: Type -> Type where
   Scalar :: a %1 -> Scalar a
 
+scale :: (Multiplicative a, Functor f) => Scalar a %1 -> f a %1 -> f a
+scale (Scalar a) = fmap (a *)
+
 instance Data.Functor Scalar where
   fmap f (Scalar a) = Scalar (f a)
 
 instance Functor Scalar where
   fmap f (Scalar a) = Scalar (f a)
+
+instance ClassicalFunctor.Functor Scalar where
+  fmap f (Scalar s) = Scalar (f s)
 
 instance Data.Applicative Scalar where
   pure = Scalar
@@ -58,7 +67,7 @@ instance (Num a) => Num (Scalar a) where
   abs = fmap abs
   signum = fmap signum
 
-instance (Num a) => GHC.Num (Scalar a) where
+instance (Num a) => ClassicalNum.Num (Scalar a) where
   Scalar a + Scalar b = Scalar (a + b)
   Scalar a - Scalar b = Scalar (a - b)
   Scalar a * Scalar b = Scalar (a * b)
@@ -88,11 +97,15 @@ instance (Floating a, Num a) => Floating (Scalar a) where
 instance (Eq a) => Eq (Scalar a) where
   Scalar a == Scalar b = a == b
 
+instance (Eq a) => ClassicalEq.Eq (Scalar a) where
+  Scalar a == Scalar b = a == b
+
 instance (Ord a) => Ord (Scalar a) where
   compare (Scalar a) (Scalar b) = compare a b
 
 instance (FromInteger a, Multiplicative a, Show a) => Show (Scalar a) where
   show (Scalar a) = show (a * fromInteger 100) ++ "%"
 
-scale :: (Multiplicative a, Functor f) => Scalar a %1 -> f a %1 -> f a
-scale (Scalar a) = fmap (a *)
+instance (Arbitrary a) => Arbitrary (Scalar a) where
+  arbitrary = Scalar ClassicalFunctor.<$> arbitrary
+  shrink (Scalar a) = Scalar ClassicalFunctor.<$> shrink a

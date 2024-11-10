@@ -15,7 +15,7 @@ marginal c probabilityOfYes =
     pYes = Probability.unwrap probabilityOfYes
     pNo = one - pYes
     gain = Marginal.unwrap (Contract.ifYes c)
-    loss = one - Marginal.unwrap (Contract.ifNo c)
+    loss = -Marginal.unwrap (Contract.ifNo c)
 
 marginalDebug :: (Fractional a, Num a, Show a) => Contract.Contract (Marginal.Marginal a) -> Probability.Probability a -> String
 marginalDebug c probabilityOfYes =
