@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Check formatting
+      uses: haskell-actions/run-ormolu@v16
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v27
+
+    - name: Install direnv
+      uses: aldoborrero/direnv-nix-action@v2
+      with:
+        use_nix_profile: true
+        nix_channel: nixpkgs
+
+    - name: Cabal (build)
+      run: cabal build
+
+    - name: Cabal (run)
+      run: cabal run
+
+    - name: Cabal (test)
+      run: cabal test
+
+    - name: Nix (build)
+      run: nix build
+
+    - name: Nix (run)
+      run: nix run
+
+    - uses: actions/checkout@v4
